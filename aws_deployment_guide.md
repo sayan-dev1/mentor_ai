@@ -1,136 +1,145 @@
-# 🚀 AWS Free Tier Deployment Guide for MentorAI
+# 🚀 AWS ECS Fargate + ECR Deployment Guide (Express Mode)
 
-This guide provides step-by-step instructions for deploying **MentorAI** to a free **AWS EC2** instance using Docker and Docker Compose.
-
----
-
-## 📌 Prerequisites
-1. An active **AWS Account** (Sign up at [aws.amazon.com](https://aws.amazon.com) - includes 12 months of Free Tier).
-2. Your **Groq API Key** and **OpenRouter API Key**.
-3. Git repository pushed to GitHub.
+This guide provides step-by-step instructions for deploying **MentorAI** to **Amazon ECS (Elastic Container Service) on AWS Fargate** using **Amazon ECR (Elastic Container Registry)**. This setup uses **AWS Copilot**, AWS's officially recommended tool for serverless container deployment.
 
 ---
 
-## 🛠️ Step 1: Launch an AWS EC2 Instance (Free Tier)
+## 📌 Deployment Architecture
 
-1. Log in to the **AWS Management Console** and navigate to the **EC2 Dashboard**.
-2. Click **Launch Instance**.
-3. Configure the following settings:
-   - **Name**: `mentorai-server`
-   - **Application and OS Image (AMI)**: Select **Ubuntu Server 24.04 LTS** (marked *Free tier eligible*).
-   - **Instance Type**: Select **t2.micro** (or `t3.micro` in eligible regions, marked *Free tier eligible*).
-   - **Key Pair (login)**: Click **Create new key pair**. Download the `.pem` file (e.g., `mentorai.pem`) and store it securely.
-4. **Network Settings**:
-   - Check **Allow SSH traffic from** (Select *My IP* or *Anywhere*).
-   - Check **Allow HTTP traffic from the internet** (Port 80).
-   - Check **Allow HTTPS traffic from the internet** (Port 443).
-5. Click **Launch Instance**.
-
----
-
-## 🔐 Step 2: Configure File Permissions for Key Pair
-
-On your local machine, open your terminal (or PowerShell) and navigate to the folder where you downloaded `mentorai.pem`:
-
-```bash
-# On Linux/macOS:
-chmod 400 mentorai.pem
-
-# On Windows (PowerShell):
-icacls .\mentorai.pem /inheritance:r
-icacls .\mentorai.pem /grant:r "${env:USERNAME}:(R)"
+```
+GitHub Repository 
+      │
+      ▼
+Docker Build (Local or CI)
+      │
+      ▼
+Amazon ECR (Elastic Container Registry)
+      │
+      ▼
+Amazon ECS (Task Definition on AWS Fargate)
+      │
+      ▼
+Application Load Balancer (ALB) ──► HTTPS URL (Managed Service)
 ```
 
 ---
 
-## 🔌 Step 3: Connect to your EC2 Instance via SSH
+## 🛠️ Step 1: Install AWS CLI & AWS Copilot
 
-Locate your EC2 instance's **Public IPv4 address** in the AWS console, then run:
+AWS Copilot is the officially supported tool for managing ECS applications in "Express Mode".
 
-```bash
-ssh -i "mentorai.pem" ubuntu@YOUR_EC2_PUBLIC_IP
-```
-
----
-
-## 📦 Step 4: Install Docker & Docker Compose on EC2
-
-Once connected to your EC2 instance, run the following commands to update packages and install Docker:
-
-```bash
-# 1. Update package registry
-sudo apt-get update && sudo apt-get upgrade -y
-
-# 2. Install Docker
-sudo apt-get install -y docker.io
-
-# 3. Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# 4. Add Ubuntu user to the Docker group
-sudo usermod -aG docker ubuntu
-
-# 5. Refresh group memberships (or reconnect to SSH)
-newgrp docker
-```
-
----
-
-## 🚀 Step 5: Clone Repository and Configure Env
-
-1. Clone your GitHub repository onto the EC2 instance:
+1. **Install AWS CLI**: Follow the installation guide for [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+2. **Configure AWS Credentials**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Mentor_AI.git
-   cd Mentor_AI
+   aws configure
    ```
-
-2. Create the backend `.env` file:
-   ```bash
-   nano backend/.env
-   ```
-   Add your API Keys:
-   ```env
-   GROQ_API_KEY="gsk_YOUR_REAL_KEY_HERE"
-   OPENROUTER_API_KEY="sk-or-YOUR_REAL_KEY_HERE"
-   ```
-   *Press `Ctrl+O`, `Enter`, then `Ctrl+X` to save and exit.*
+   *Enter your AWS Access Key ID, Secret Access Key, Default region (e.g. `us-east-1`), and Output format (`json`).*
+3. **Install AWS Copilot CLI**:
+   - **macOS (Homebrew)**: `brew install aws/tap/copilot-cli`
+   - **Windows (PowerShell)**:
+     ```powershell
+     New-Item -Directory -Path "$Env:ProgramFiles\Amazon\Copilot" -Force
+     Invoke-WebRequest -OutFile "$Env:ProgramFiles\Amazon\Copilot\copilot.exe" https://github.com/aws/copilot-cli/releases/latest/download/copilot-windows.exe
+     [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$Env:ProgramFiles\Amazon\Copilot", "Machine")
+     ```
+   - **Linux**:
+     ```bash
+     curl -Lo copilot https://github.com/aws/copilot-cli/releases/latest/download/copilot-linux && chmod +x copilot && sudo mv copilot /usr/local/bin/copilot
+     ```
 
 ---
 
-## 🚢 Step 6: Deploy with Docker Compose
+## 📦 Step 2: Initialize the ECS Application
 
-Build and run your container stack in detached background mode:
+Navigate to the root directory of your `Mentor_AI` project and initialize the application structure:
 
 ```bash
-docker-compose up --build -d
+# Initialize Copilot application
+copilot app init mentorai
 ```
 
-Verify that the containers are active:
+This creates an isolated infrastructure group (VPC, Subnets, Internet Gateways) for your services.
+
+---
+
+## 🚀 Step 3: Deploy the Backend Service
+
+1. Create a Load Balanced Web Service for the backend FastAPI container:
+   ```bash
+   copilot svc init --name backend --svc-type "Load Balanced Web Service" --dockerfile ./backend/Dockerfile
+   ```
+
+2. This command automatically:
+   - Configures a private Amazon ECR repository for the backend.
+   - Generates task definitions mapping port `8000`.
+   - Creates a manifest configuration file at `copilot/backend/manifest.yml`.
+
+3. **Configure Environment Variables**:
+   Open `copilot/backend/manifest.yml` and add your API Keys under the `variables` section:
+   ```yaml
+   variables:
+     PORT: 8000
+   secrets:
+     GROQ_API_KEY: /copilot/mentorai/secrets/GROQ_API_KEY
+     OPENROUTER_API_KEY: /copilot/mentorai/secrets/OPENROUTER_API_KEY
+   ```
+
+4. **Register the Secrets in AWS Systems Manager Parameter Store**:
+   ```bash
+   copilot secret init --name GROQ_API_KEY
+   # Enter your Groq API Key when prompted
+
+   copilot secret init --name OPENROUTER_API_KEY
+   # Enter your OpenRouter API Key when prompted
+   ```
+
+---
+
+## 🚢 Step 4: Deploy the Frontend Web App
+
+1. Initialize the frontend service:
+   ```bash
+   copilot svc init --name frontend --svc-type "Load Balanced Web Service" --dockerfile ./frontend/Dockerfile
+   ```
+
+2. This configures another private ECR repository and creates `copilot/frontend/manifest.yml`.
+3. Open `copilot/frontend/manifest.yml` and ensure the ingress path routes default traffic:
+   ```yaml
+   http:
+     path: '/'
+     healthcheck: '/'
+   ```
+
+---
+
+## 🌐 Step 5: Provision the Environment (Launch to ECS)
+
+Deploy both services to the Fargate environment (VPC, ECS Cluster, and Application Load Balancer):
+
 ```bash
-docker-compose ps
+# 1. Create a development environment (VPC, Subnets, ALB)
+copilot env init --name test --profile default --default-config
+
+# 2. Deploy the backend service
+copilot svc deploy --name backend --env test
+
+# 3. Deploy the frontend service
+copilot svc deploy --name frontend --env test
 ```
 
+Copilot will automatically:
+1. Build both Docker images locally.
+2. Push them to Amazon ECR.
+3. Provision serverless Amazon ECS Fargate tasks.
+4. Set up an Application Load Balancer (ALB) routing all `/api/` traffic to the backend, and remaining traffic to the React frontend.
+5. Provide a secure public HTTPS URL for your application!
+
 ---
 
-## 🌐 Step 7: Access the Application
+## 🧹 Step 6: Teardown (Avoid Charges)
 
-- **Frontend Interface**: Open your browser and navigate to `http://YOUR_EC2_PUBLIC_IP` (Port 80 proxy routing).
-- **Backend API Docs**: Navigate to `http://YOUR_EC2_PUBLIC_IP/api/health` to confirm backend connectivity.
+To stop services and delete all provisioned AWS resources (VPC, ALB, ECS, ECR repos):
 
----
-
-## 🔒 Optional: Add Free SSL via Let's Encrypt (Certbot)
-
-To secure your deployment with `https://` using a free SSL certificate:
-
-1. Map your domain name (e.g. `mentorai.example.com`) to your EC2 public IP using an **A Record** in your DNS registrar (GoDaddy, Namecheap, Route 53).
-2. Install Certbot on the EC2 instance:
-   ```bash
-   sudo apt-get install -y certbot
-   ```
-3. Generate the certificate:
-   ```bash
-   sudo certbot certonly --standalone -d mentorai.example.com
-   ```
-4. Map the certificates into Nginx by modifying your `frontend/nginx.conf` and updating the `docker-compose.yml` to expose port `443`.
+```bash
+copilot app delete --name mentorai
+```
