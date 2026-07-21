@@ -1,0 +1,42 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Environment Variables & Secrets (CRITICAL)
+backend/.env
+.env
+.env.local
+*.env
+
+# Node.js & Frontend Build Outputs
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.vite/
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary & Log Files
+*.log
+tmp/
+scratch/
