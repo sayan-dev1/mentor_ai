@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Engine (Port 8000)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mentorai-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/api/health\")'"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # React 19 Frontend WebApp (Port 3000 -> Nginx Port 80)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mentorai-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: mentorai-network
