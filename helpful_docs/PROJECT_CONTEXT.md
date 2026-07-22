@@ -4,7 +4,7 @@
 
 **MentorAI** is a production-quality, modular AI-powered learning and productivity platform. Unlike simple single-prompt chatbots, MentorAI operates as a full SaaS product suite (similar to *Perplexity*, *Claude*, *Notion AI*, and *GitHub Copilot*) featuring **four specialized AI agents** distributed across **Groq** (for ultra-high-speed execution) and **OpenRouter** (for massive context & deep reasoning).
 
-**Live AWS Deployment URL**: [Insert Live AWS Application URL Here]
+**Live AWS Deployment URL**: http://13.234.66.213:3000
 
 ```mermaid
 graph TD
