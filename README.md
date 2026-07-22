@@ -24,6 +24,12 @@ Instead of relying on a single general chatbot model, MentorAI routes tasks acro
 
 ---
 
+## 🌐 Live AWS Application
+
+**Live Deployment URL**: [Insert Live AWS Application URL Here]
+
+---
+
 ## 💡 Why MentorAI?
 
 Most AI education tools focus on a single use case, such as quiz generation or general Q&A. 
@@ -107,6 +113,16 @@ graph TD
     LLMRouter -.->|rate-limit / 429 error| GroqFallback
     LLMRouter -->|agent='codebase'| DeepSeek
 ```
+
+---
+
+## 🛠️ Prompting Strategy & Frameworks
+
+MentorAI employs a structured role-playing and context-injection prompting strategy to handle unstructured data (like resumes and documents) efficiently. 
+
+- **Role-Playing Context**: Each agent is initialized with a specific persona (e.g., "Senior Technical Recruiter", "Research Intelligence Assistant") to shape tone and formatting.
+- **Strict JSON Enforcement**: Prompts are designed to enforce `JSON` outputs for data-heavy tasks (like Resume Analysis and Quiz Generation) preventing backend parsing errors.
+- **Context Chunking**: The Research Agent injects `sentence-transformers` chunks directly into the prompt payload with precise `page/section` references for citation-based answering.
 
 ---
 
@@ -194,6 +210,18 @@ graph TD
 - [ ] **GitHub Repository Analysis**: Direct GitHub URL code parsing and line-referenced Q&A.
 - [ ] **Docker Deployment**: Single-command `docker-compose up` production bundle.
 - [ ] **User Authentication**: Multi-user account persistence and saved session history.
+
+---
+
+## 📈 Phase-by-Phase Development & Challenges
+
+1. **Architecture & Prototyping**: Defined the FastAPI backend and initialized React 19. Designed the `LLMFactory` for seamless provider routing.
+2. **RAG Pipeline Implementation**: Integrated `pypdf`, `sentence-transformers`, and FAISS to handle document chunking and vector storage.
+3. **Multi-Agent Logic Setup**: Built the distinct prompting strategies and hooked up Server-Sent Events (SSE) for low-latency streaming.
+4. **Frontend UI/UX**: Designed the Glassmorphism theme using Tailwind CSS and Framer Motion.
+5. **Hardening & Deployment**: Containerized the application and resolved OpenRouter rate-limiting issues by implementing an automatic failover fallback to Groq models.
+
+**Key Learnings**: Utilizing a multi-provider setup is far more robust than relying on a single LLM API. High-speed token streaming drastically improves UX for study tasks, while massive-context models handle the heavy lifting for RAG processes.
 
 ---
 

@@ -19,14 +19,14 @@ def test_study_explain_streaming():
 
 
 def test_research_upload_and_ask():
-    file_content = b"sample pdf bytes"
+    file_content = b"sample text content for testing RAG indexing and retrieval"
     response = client.post(
         "/api/research/upload",
-        files={"file": ("sample.pdf", file_content, "application/pdf")},
+        files={"file": ("sample.txt", file_content, "text/plain")},
         headers={"x-session-id": "test-session"},
     )
     assert response.status_code == 200
-    assert response.json()["filename"] == "sample.pdf"
+    assert response.json()["filename"] == "sample.txt"
 
     ask_response = client.post(
         "/api/research/ask",

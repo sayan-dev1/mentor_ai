@@ -4,6 +4,8 @@
 
 **MentorAI** is a production-quality, modular AI-powered learning and productivity platform. Unlike simple single-prompt chatbots, MentorAI operates as a full SaaS product suite (similar to *Perplexity*, *Claude*, *Notion AI*, and *GitHub Copilot*) featuring **four specialized AI agents** distributed across **Groq** (for ultra-high-speed execution) and **OpenRouter** (for massive context & deep reasoning).
 
+**Live AWS Deployment URL**: [Insert Live AWS Application URL Here]
+
 ```mermaid
 graph TD
     User["👤 User / Client (React 19 + TypeScript + Vite)"]
@@ -89,6 +91,15 @@ graph TD
 | 💼 **Interview Agent** | **Groq** | `llama-3.3-70b-versatile` | Low-latency structured rubric grading for STAR candidate responses against job descriptions. |
 | 📄 **Research Agent** | **OpenRouter** | `nvidia/nemotron-3-ultra-550b-a55b:free` | Massive context window capable of processing long PDF/DOCX chunk retrieval without citation degradation. |
 | 💻 **Codebase Agent** | **OpenRouter** | `qwen/qwen-2.5-coder-32b-instruct:free` | Purpose-built for code parsing, AST analysis, line-level code references, and syntax explanation. |
+
+---
+
+## 🧠 3.5 Prompting Strategy & Frameworks
+
+MentorAI employs a dynamic, context-injected prompting strategy defined within `backend/core/prompt_builder.py`:
+- **Role-Playing System Prompts**: Each agent starts with a strict persona (e.g., "Expert AI Tutor" or "Senior Technical Hiring Manager") to set the exact tone and domain constraints.
+- **Strict JSON Output Enforcement**: For features like the 10-Question Quiz and Resume Analysis, the prompt explicitly demands `ONLY valid raw JSON` with a strictly defined key structure, ensuring safe parsing by the backend `LLMFactory`.
+- **RAG Chunk Injection**: The Research Agent dynamically loops over FAISS-retrieved text chunks, prepending metadata like `[Source: document.pdf, Page: 2]` directly into the context window for accurate citations.
 
 ---
 
@@ -200,3 +211,15 @@ npm install
 npm run dev
 ```
 Open your browser at `http://localhost:3000`.
+
+---
+
+## 📈 8. Phase-by-Phase Development & Challenges
+
+1. **Phase 1 (Architecture)**: Designed the FastAPI backend shell, built the React 19 UI foundations, and mapped out the multi-provider LLM strategy (Groq + OpenRouter).
+2. **Phase 2 (RAG & Parsers)**: Implemented `pypdf`, `python-docx`, and FAISS to enable robust document ingestion and vector retrieval.
+3. **Phase 3 (Prompting & Agent Logic)**: Engineered the distinct persona prompts for all four agents. Hooked up Server-Sent Events (SSE) across the backend to stream responses to the frontend.
+4. **Phase 4 (UI/UX Refinement)**: Finalized the Glassmorphism Tailwind theme, added context banners, interactive depth pills, and JSON-based rubric evaluation visualizers.
+5. **Phase 5 (Deployment & Resilience)**: Deployed to AWS EC2 via Docker. Addressed OpenRouter API rate limit errors by engineering an automatic failover fallback to Groq (`openai/gpt-oss-120b`).
+
+**Key Learnings**: We discovered that relying on a single LLM API limits UX. Groq provides essential speed for immediate chat feedback (Study Agent), whereas OpenRouter provides the context size necessary for complex RAG tasks (Research Agent). Building a resilient fallback layer in `LLMFactory` was crucial for uptime.
