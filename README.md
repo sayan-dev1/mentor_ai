@@ -174,27 +174,27 @@ MentorAI employs a structured role-playing and context-injection prompting strat
 
 ### Study Agent Workspace
 *Interactive explanation chat with depth pills and 10-question quiz mode*
-```text
-[ Screenshot Placeholder: Study Agent ]
-```
+
+![App Dashboard Screenshot](images/study_agent.png)
+
 
 ### Research Agent Workspace
 *PDF/DOCX document upload with RAG vector search and source citations*
-```text
-[ Screenshot Placeholder: Research Agent ]
-```
+
+![App Dashboard Screenshot](images/research_agent.png)
+
 
 ### Interview Agent Workspace
 *Resume PDF parsing, AI Insights score breakdown, and STAR evaluation*
-```text
-[ Screenshot Placeholder: Interview Agent ]
-```
+
+![App Dashboard Screenshot](images/interview_agent.png)
+
 
 ### Codebase Agent Workspace
 *General software engineering assistant powered by DeepSeek V4 Flash*
-```text
-[ Screenshot Placeholder: Codebase Agent ]
-```
+
+![App Dashboard Screenshot](images/codebase_agent.png)
+
 
 </div>
 
