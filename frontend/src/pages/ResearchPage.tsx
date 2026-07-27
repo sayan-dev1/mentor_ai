@@ -20,7 +20,7 @@ import {
   StopCircle,
   Trash2
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../components/ui/ToastNotification';
 
 export const ResearchPage: React.FC = () => {
   const [uploadedDoc, setUploadedDoc] = useState<UploadDocumentResponse | null>(null);

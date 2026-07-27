@@ -132,7 +132,7 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title="Security"
           value="Provider Agnostic"
-          subtitle="Gemini 2.5 Flash active"
+          subtitle="Groq & OpenRouter active"
           icon={ShieldCheck}
           variant="purple"
         />

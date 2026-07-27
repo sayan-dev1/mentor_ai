@@ -25,7 +25,7 @@ export const MainLayout: React.FC = () => {
 
   return (
     <div className={`min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] flex flex-col font-sans selection:bg-[var(--accent-primary)] selection:text-[var(--text-secondary)] ${isDark ? 'dark' : 'light'}`}>
-      <Toaster position="top-right" theme={isDark ? 'dark' : 'light'} richColors />
+      <Toaster position="top-right" />
 
       {/* Sidebar Navigation */}
       <Sidebar

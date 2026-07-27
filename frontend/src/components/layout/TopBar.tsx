@@ -14,7 +14,22 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../ui/ToastNotification';
+
+const GithubIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path d="M9 18c-4.51 2-5-2-7-2" />
+  </svg>
+);
 
 interface TopBarProps {
   onOpenMobileMenu: () => void;
@@ -85,6 +100,18 @@ export const TopBar: React.FC<TopBarProps> = ({
             Ctrl+K
           </kbd>
         </button>
+
+        {/* GitHub Repository Link Button */}
+        <a
+          href="https://github.com/sayan-dev1/mentor_ai"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-xs text-slate-300 hover:text-white transition-all shadow-sm group"
+          title="View GitHub Repository"
+        >
+          <GithubIcon className="w-3.5 h-3.5 text-slate-300 group-hover:scale-110 group-hover:text-indigo-400 transition-all shrink-0" />
+          <span className="hidden sm:inline font-medium">GitHub</span>
+        </a>
 
         {/* Connection Status Badge */}
         <button

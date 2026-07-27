@@ -20,7 +20,7 @@ import {
   Zap,
   BookOpen
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../components/ui/ToastNotification';
 
 export const SettingsPage: React.FC = () => {
   const { sessionId, backendHealth, resetSession, refreshHealth, isHealthChecking } = useSession();
@@ -154,8 +154,8 @@ export const SettingsPage: React.FC = () => {
 
           <div className="space-y-3 pt-2 text-xs">
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-white/5">
-              <span className="text-slate-400">Default LLM Provider</span>
-              <Badge variant="cyan">Google Gemini 2.5 Flash</Badge>
+              <span className="text-slate-400">Default LLM Engine</span>
+              <Badge variant="cyan">Groq / OpenRouter Multi-Provider</Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-white/5">
               <span className="text-slate-400">Supported Fallbacks</span>

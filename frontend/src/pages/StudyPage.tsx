@@ -26,7 +26,7 @@ import {
   Target,
   RefreshCw
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../components/ui/ToastNotification';
 import confetti from 'canvas-confetti';
 
 export const StudyPage: React.FC = () => {

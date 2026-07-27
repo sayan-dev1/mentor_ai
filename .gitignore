@@ -40,3 +40,6 @@ Desktop.ini
 *.log
 tmp/
 scratch/
+
+# Context for coding AI agent
+ai_context.txt

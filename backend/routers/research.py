@@ -68,9 +68,9 @@ def extract_text_chunks_from_file(filename: str, contents: bytes) -> tuple[List[
             print(f"Error parsing PDF '{filename}': {e}")
 
     elif ext in ["docx", "doc"]:
-        try:
-            doc = docx.Document(io.BytesIO(contents))
-            full_text = "\n\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+        from routers.interview import extract_docx_text
+        full_text = extract_docx_text(contents)
+        if full_text.strip():
             doc_chunks = chunk_text(full_text, chunk_size=800, overlap=150)
             for idx, chunk in enumerate(doc_chunks, start=1):
                 chunks.append(chunk)
@@ -79,8 +79,8 @@ def extract_text_chunks_from_file(filename: str, contents: bytes) -> tuple[List[
                     "page": idx,
                     "snippet": chunk[:150].replace("\n", " ") + "..."
                 })
-        except Exception as e:
-            print(f"Error parsing DOCX '{filename}': {e}")
+        else:
+            print(f"Error parsing DOCX '{filename}': No readable text extracted")
 
     else:
         # Plain text, markdown, csv, json, code, etc.

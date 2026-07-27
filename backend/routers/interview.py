@@ -1,6 +1,8 @@
 import io
 import json
 import re
+import zipfile
+import xml.etree.ElementTree as ET
 from fastapi import APIRouter, Form, UploadFile, File, HTTPException
 import pypdf
 import docx
@@ -10,6 +12,45 @@ from core.prompt_builder import PromptBuilder
 
 router = APIRouter(prefix="/api/interview", tags=["interview"])
 llm = LLMService(agent_type="interview")
+
+
+def extract_docx_text(contents: bytes) -> str:
+    # 1. Primary: python-docx (paragraphs + tables)
+    try:
+        doc = docx.Document(io.BytesIO(contents))
+        extracted_lines = []
+        for p in doc.paragraphs:
+            txt = p.text.strip()
+            if txt:
+                extracted_lines.append(txt)
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    cell_txt = cell.text.strip()
+                    if cell_txt and cell_txt not in extracted_lines:
+                        extracted_lines.append(cell_txt)
+        if extracted_lines:
+            return "\n".join(extracted_lines)
+    except Exception as e:
+        print(f"[Interview] python-docx parsing failed: {e}")
+
+    # 2. Fallback: Parse word/document.xml directly via zipfile and ElementTree (<w:t> tags)
+    try:
+        with zipfile.ZipFile(io.BytesIO(contents)) as z:
+            if "word/document.xml" in z.namelist():
+                xml_bytes = z.read("word/document.xml")
+                tree = ET.fromstring(xml_bytes)
+                texts = []
+                for elem in tree.iter():
+                    if elem.tag.endswith("}t") or elem.tag == "t":
+                        if elem.text and elem.text.strip():
+                            texts.append(elem.text.strip())
+                if texts:
+                    return "\n".join(texts)
+    except Exception as e:
+        print(f"[Interview] Zip XML fallback parsing failed: {e}")
+
+    return ""
 
 
 def parse_resume_file(filename: str, contents: bytes) -> tuple[str, int]:
@@ -28,13 +69,15 @@ def parse_resume_file(filename: str, contents: bytes) -> tuple[str, int]:
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to parse PDF file: {str(e)}")
     elif ext in ["docx", "doc"]:
-        try:
-            doc = docx.Document(io.BytesIO(contents))
-            paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
-            text_parts.append("\n".join(paragraphs))
-            page_count = max(1, len(paragraphs) // 15)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to parse DOCX file: {str(e)}")
+        extracted = extract_docx_text(contents)
+        if extracted.strip():
+            text_parts.append(extracted.strip())
+            page_count = max(1, len(extracted.splitlines()) // 15)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="No readable text could be extracted from this Word document. Please ensure it contains unencrypted text or convert it to PDF."
+            )
     else:
         try:
             txt = contents.decode("utf-8", errors="ignore")

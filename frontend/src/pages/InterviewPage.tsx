@@ -26,7 +26,7 @@ import {
   Plus,
   X
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../components/ui/ToastNotification';
 
 export const InterviewPage: React.FC = () => {
   const [resume, setResume] = useState('');

@@ -24,7 +24,7 @@ import {
   GitBranch,
   Info
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '../components/ui/ToastNotification';
 
 export const CodebasePage: React.FC = () => {
   const [repoUrl, setRepoUrl] = useState('');
